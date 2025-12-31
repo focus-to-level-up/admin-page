@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://prod.api.studio-edge.app';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://prod.api.studio-edge.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -101,4 +102,18 @@ export const statsApi = {
 export const reportApi = {
   getList: (page = 0, size = 20) =>
     api.get(`/api/v1/admin/reports`, { params: { page, size } }),
+};
+// 리그 & 랭킹 API (수정됨)
+export const leagueApi = {
+  // 1. 리그 전체 조회
+  getLeagues: () => 
+    api.get('/api/v1/admin/leagues'),
+
+  // 2. 특정 리그의 랭킹 조회
+  getRankingsByLeague: (leagueId: number) =>
+    api.get(`/api/v1/admin/leagues/${leagueId}/rankings`),
+
+  // 3. 유저 랭킹 제외 (밴) 처리
+  banMemberFromRanking: (memberId: number) =>
+    api.post(`/api/v1/admin/rankings/${memberId}/exclude`),
 };

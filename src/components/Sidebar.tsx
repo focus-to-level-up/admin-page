@@ -13,10 +13,12 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import { Trophy } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', icon: Home, label: '대시보드' },
   { href: '/members', icon: Users, label: '회원 관리' },
+  { href: '/leagues', icon: Trophy, label: '리그 & 랭킹' },
   { href: '/mails', icon: Mail, label: '우편 발송' },
   { href: '/guilds', icon: Building2, label: '길드 관리' },
   { href: '/stats', icon: BarChart3, label: '통계' },

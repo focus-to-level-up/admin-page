@@ -119,3 +119,39 @@ export interface ReportItem {
   reportToTotalReportCount: number;
   createdAt: string;
 }
+
+export interface LeagueInfo {
+  leagueId: number;
+  seasonId: number;
+  name: string;
+  category: string;
+  tier: string;
+  currentWeek: number;
+  startDate: string;
+  endDate: string;
+  currentMembers: number;
+  isActive: boolean;
+}
+
+export interface RankingInfo {
+  rankingId: number;
+  memberId: number;
+  level: number;
+  nickname: string;
+  socialId: string;
+  status: string;
+  tier: string;
+}
+
+export interface AdminLeagueResponse {
+  leagues: LeagueInfo[];
+  totalCount: number;
+}
+
+export interface AdminRankingResponse {
+  leagueId: number;
+  leagueName: string;
+  leagueTier: string;
+  totalMembers: number;
+  rankings: RankingInfo[];
+}

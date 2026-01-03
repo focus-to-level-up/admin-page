@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const { data: dailyData, isLoading: dailyLoading } = useQuery({
     queryKey: ['dailyFocusDistribution', today],
     queryFn: async () => {
-      const res = await statsApi.getDailyFocusDistribution(today);
+      const res = await statsApi.getDailyFocusDistribution();
       return res.data.data;
     },
   });

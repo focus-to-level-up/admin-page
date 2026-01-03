@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://prod.api.studio-edge.app';
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// plz
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -85,8 +86,8 @@ export const guildApi = {
 
 // 통계 API
 export const statsApi = {
-  getDailyFocusDistribution: (date: string) =>
-    api.get(`/api/v1/admin/stats/focus-time/daily`, { params: { date } }),
+  getDailyFocusDistribution: () =>
+    api.get(`/api/v1/admin/stats/focus-time/daily`),
 
   getWeeklyFocusDistribution: (date: string) =>
     api.get(`/api/v1/admin/stats/focus-time/weekly`, { params: { date } }),

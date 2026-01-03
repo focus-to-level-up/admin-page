@@ -42,7 +42,7 @@ export default function StatsPage() {
     queryKey: ['focusDistribution', statType, selectedDate],
     queryFn: async () => {
       const res = statType === 'daily'
-        ? await statsApi.getDailyFocusDistribution(selectedDate)
+        ? await statsApi.getDailyFocusDistribution()
         : await statsApi.getWeeklyFocusDistribution(selectedDate);
       return res.data.data;
     },

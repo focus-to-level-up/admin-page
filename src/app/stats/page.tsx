@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { useQuery } from '@tanstack/react-query';
 import { statsApi } from '@/lib/api';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   BarChart,
   Bar,
@@ -35,7 +35,14 @@ interface GenderItem {
 }
 
 export default function StatsPage() {
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const getInitialServiceDate = () => {
+    const now = new Date();
+    if (now.getHours() < 4) {
+      return format(subDays(now, 1), 'yyyy-MM-dd');
+    }
+    return format(now, 'yyyy-MM-dd');
+  };
+  const [selectedDate, setSelectedDate] = useState(getInitialServiceDate());
   const [statType, setStatType] = useState<'daily' | 'weekly'>('daily');
 
   const { data: focusData, isLoading: focusLoading } = useQuery({
@@ -158,18 +165,20 @@ export default function StatsPage() {
                 <div className="mt-6 overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-3 font-medium text-gray-500">시간대</th>
-                        <th className="text-right py-2 px-3 font-medium text-gray-500">유저 수</th>
-                        <th className="text-right py-2 px-3 font-medium text-gray-500">비율</th>
+                      <tr className="border-b border-gray-200"> {/* 테두리도 너무 연하면 border-gray-300으로 변경 */}
+                        {/* [수정] text-gray-500 -> text-gray-900 (거의 검정) */}
+                        <th className="text-left py-2 px-3 font-bold text-gray-900">시간대</th>
+                        <th className="text-right py-2 px-3 font-bold text-gray-900">유저 수</th>
+                        <th className="text-right py-2 px-3 font-bold text-gray-900">비율</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {focusData?.distribution?.map((item: { label: string; userCount: number; percentage: number }, index: number) => (
-                        <tr key={index} className="border-b hover:bg-gray-50">
-                          <td className="py-2 px-3">{item.label}</td>
-                          <td className="text-right py-2 px-3 font-medium">{item.userCount}명</td>
-                          <td className="text-right py-2 px-3 text-gray-500">{item.percentage}%</td>
+                      {focusData?.distribution?.map((item: any, index: number) => (
+                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                          {/* [수정] text-gray-500 -> text-gray-700 (진한 회색) */}
+                          <td className="py-2 px-3 text-gray-700">{item.label}</td>
+                          <td className="text-right py-2 px-3 font-medium text-gray-900">{item.userCount}명</td>
+                          <td className="text-right py-2 px-3 text-gray-700">{item.percentage}%</td>
                         </tr>
                       ))}
                     </tbody>
@@ -197,28 +206,26 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={categoryData?.distribution || []}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="userCount"
-                        nameKey="categoryName"
-                        label={renderCategoryLabel}
-                      >
-                        {categoryData?.distribution?.map((_: unknown, index: number) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={focusData?.distribution || []} margin={{ bottom: 60 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="label"
+                          fontSize={12}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          tick={{ fill: '#374151' }} // [수정] X축 글자색 진하게
+                        />
+                        <YAxis 
+                          tick={{ fill: '#374151' }} // [수정] Y축 글자색 진하게
+                        />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', color: '#111827' }} // 툴팁 스타일도 명확하게
+                          itemStyle={{ color: '#374151' }}
+                        />
+                        <Bar dataKey="userCount" fill="#3B82F6" name="유저 수" />
+                    </BarChart>
                   </ResponsiveContainer>
 
                   {/* 카테고리 테이블 */}
@@ -234,14 +241,14 @@ export default function StatsPage() {
                       <tbody>
                         {categoryData?.distribution?.map((item: CategoryItem, index: number) => (
                           <tr key={index} className="border-b hover:bg-gray-50">
-                            <td className="py-2 px-3 flex items-center gap-2">
+                            <td className="py-2 px-3 flex items-center text-gray-500">
                               <span
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
                               />
                               {item.categoryName}
                             </td>
-                            <td className="text-right py-2 px-3 font-medium">{item.userCount}명</td>
+                            <td className="text-right py-2 px-3 text-gray-500">{item.userCount}명</td>
                             <td className="text-right py-2 px-3 text-gray-500">{item.percentage}%</td>
                           </tr>
                         ))}
@@ -300,14 +307,14 @@ export default function StatsPage() {
                       <tbody>
                         {genderData?.distribution?.map((item: GenderItem, index: number) => (
                           <tr key={index} className="border-b hover:bg-gray-50">
-                            <td className="py-2 px-3 flex items-center gap-2">
+                            <td className="py-2 px-3 flex items-center text-gray-500">
                               <span
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: index === 0 ? '#3B82F6' : '#EC4899' }}
                               />
                               {item.genderName}
                             </td>
-                            <td className="text-right py-2 px-3 font-medium">{item.userCount}명</td>
+                            <td className="text-right py-2 px-3 text-gray-500">{item.userCount}명</td>
                             <td className="text-right py-2 px-3 text-gray-500">{item.percentage}%</td>
                           </tr>
                         ))}

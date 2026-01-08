@@ -3,7 +3,7 @@
 import Layout from '@/components/Layout';
 import { useQuery } from '@tanstack/react-query';
 import { statsApi } from '@/lib/api';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   BarChart,
   Bar,
@@ -26,7 +26,16 @@ interface CategoryItem {
 }
 
 export default function DashboardPage() {
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const getServiceDate = () => {
+    const now = new Date();
+    // 현재 시간이 새벽 4시보다 작으면(0, 1, 2, 3시) 하루 전 날짜를 사용
+    if (now.getHours() < 4) {
+      return format(subDays(now, 1), 'yyyy-MM-dd');
+    }
+    return format(now, 'yyyy-MM-dd');
+  };
+
+  const today = getServiceDate();
 
   const { data: dailyData, isLoading: dailyLoading } = useQuery({
     queryKey: ['dailyFocusDistribution', today],

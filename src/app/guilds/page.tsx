@@ -96,7 +96,10 @@ export default function GuildsPage() {
               value={guildId}
               onChange={(e) => setGuildId(e.target.value)}
               placeholder="길드 ID를 입력하세요"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 
+                          bg-white text-gray-900 placeholder-gray-500 
+                          border border-gray-300 rounded-lg 
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <button

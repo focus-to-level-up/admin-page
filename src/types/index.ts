@@ -39,6 +39,24 @@ export interface MemberDetail {
   lastLoginDateTime: string | null;
 }
 
+/**
+ * 일별 통계 데이터 (Backend: DailyStatDto)
+ */
+export interface DailyStat {
+  date: string;                 // "yyyy-MM-dd" 형태의 날짜 문자열
+  totalFocusSeconds: number;    // 해당 날짜의 총 집중 시간 (초)
+  maxConsecutiveSeconds: number; // 해당 날짜의 최대 연속 집중 시간 (초)
+}
+
+/**
+ * 회원 통계 응답 (Backend: AdminMemberStatsResponse)
+ */
+export interface MemberStats {
+  totalAverageFocusSeconds: number;          // 전체 누적 일일 평균 집중 시간
+  totalAverageMaxConsecutiveSeconds: number; // 전체 누적 평균 최대 연속 집중 시간
+  dailyStats: DailyStat[];                   // [변경] 일별 통계 리스트 (기존 monthlyStats 대체)
+}
+
 // 길드 관련 타입
 export interface GuildDetail {
   guildId: number;

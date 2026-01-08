@@ -4,12 +4,14 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { memberApi, mailApi } from '@/lib/api';
-import { Search, Send, Gift, User } from 'lucide-react';
+import { Search, Send, Gift, User, ChevronDown } from 'lucide-react';
 import type { MemberSearchResult } from '@/types';
 
 export default function MailsPage() {
+  const [searchType, setSearchType] = useState<'NICKNAME' | 'ID'>('NICKNAME');
   const [keyword, setKeyword] = useState('');
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchParams, setSearchParams] = useState({ type: 'NICKNAME', keyword: '' });
+
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [selectedMemberNickname, setSelectedMemberNickname] = useState('');
 
@@ -24,13 +26,13 @@ export default function MailsPage() {
   const [expireDays, setExpireDays] = useState(30);
 
   const { data: searchResults, isLoading } = useQuery({
-    queryKey: ['memberSearch', searchKeyword],
+    queryKey: ['memberSearch', searchParams.type, searchParams.keyword],
     queryFn: async () => {
-      if (!searchKeyword) return { content: [] };
-      const res = await memberApi.search(searchKeyword);
-      return res.data.data;
+      if (!searchParams.keyword) return []; 
+      const res = await memberApi.search(searchParams.type, searchParams.keyword);
+      return res.data.data; // 백엔드가 List를 반환하므로 배열임
     },
-    enabled: !!searchKeyword,
+    enabled: !!searchParams.keyword,
   });
 
   const sendRewardMutation = useMutation({
@@ -56,7 +58,7 @@ export default function MailsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchKeyword(keyword);
+    setSearchParams({ type: searchType, keyword });
   };
 
   const handleSelectMember = (member: MemberSearchResult) => {
@@ -128,34 +130,52 @@ export default function MailsPage() {
               <h2 className="font-semibold text-gray-900">회원 검색</h2>
             </div>
             <div className="p-4">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="닉네임 또는 ID"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+              {/* [수정] 검색 폼 UI 변경 (드롭다운 + 인풋) */}
+              <form onSubmit={handleSearch} className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <div className="relative min-w-[100px]">
+                    <select
+                      value={searchType}
+                      onChange={(e) => setSearchType(e.target.value as 'NICKNAME' | 'ID')}
+                      className="w-full appearance-none bg-white border border-gray-300 text-gray-900 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm"
+                    >
+                      <option value="NICKNAME">닉네임</option>
+                      <option value="ID">ID</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
+                  </div>
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={keyword}
+                      onChange={(e) => setKeyword(e.target.value)}
+                      placeholder={searchType === 'NICKNAME' ? "닉네임 입력" : "회원 ID 입력"}
+                      className="w-full pl-3 pr-4 py-2 
+                                  bg-white text-gray-900 placeholder-gray-500 
+                                  border border-gray-300 rounded-lg 
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
                 </div>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                 >
+                  <Search size={16} />
                   검색
                 </button>
               </form>
             </div>
+
             <div className="divide-y max-h-[400px] overflow-y-auto">
               {isLoading ? (
                 <div className="p-4 text-center text-gray-400">검색 중...</div>
-              ) : !searchResults?.content?.length ? (
+              ) : !searchResults?.length ? ( 
                 <div className="p-4 text-center text-gray-400 text-sm">
-                  {searchKeyword ? '검색 결과 없음' : '회원을 검색하세요'}
+                  {searchParams.keyword ? '검색 결과 없음' : '회원을 검색하세요'}
                 </div>
               ) : (
-                searchResults.content.map((member: MemberSearchResult) => (
+                searchResults.map((member: MemberSearchResult) => (
                   <button
                     key={member.memberId}
                     onClick={() => handleSelectMember(member)}
@@ -164,11 +184,18 @@ export default function MailsPage() {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User size={16} className="text-gray-500" />
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        member.status === 'RANKING_BANNED' ? 'bg-red-100 text-red-500' : 'bg-gray-200 text-gray-500'
+                      }`}>
+                        <User size={16} />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{member.nickname}</p>
+                        <div className="flex items-center gap-1">
+                          <p className="font-medium text-gray-900 text-sm">{member.nickname}</p>
+                          {member.status === 'RANKING_BANNED' && (
+                            <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded">BAN</span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500">ID: {member.memberId}</p>
                       </div>
                     </div>

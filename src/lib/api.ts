@@ -37,12 +37,15 @@ api.interceptors.response.use(
 );
 
 // 회원 API
-export const memberApi = {
-  search: (keyword: string, page = 0, size = 20) =>
-    api.get(`/api/v1/admin/members/search`, { params: { nickname: keyword, page, size } }),
+export const memberApi = {// [수정] 검색 API (type, keyword)
+  search: (type: string, keyword: string) => 
+    api.get(`/api/v1/admin/members/search?type=${type}&keyword=${keyword}`),
 
   getDetail: (memberId: number) =>
     api.get(`/api/v1/admin/members/${memberId}`),
+
+  getStats: (memberId: number, startDate: string, endDate: string) => 
+    api.get(`/api/v1/admin/members/${memberId}/stats?startDate=${startDate}&endDate=${endDate}`),
 
   updateNickname: (memberId: number, nickname: string) =>
     api.put(`/api/v1/admin/members/${memberId}/nickname`, { nickname }),
@@ -52,6 +55,12 @@ export const memberApi = {
 
   updateSchool: (memberId: number, school: string, schoolAddress?: string) =>
     api.put(`/api/v1/admin/members/${memberId}/school`, { school, schoolAddress }),
+
+  banMember: (memberId: number) =>
+    api.post(`/api/v1/admin/rankings/${memberId}/exclude`),
+
+  restoreMember: (memberId: number) => 
+    api.put(`/api/v1/admin/members/${memberId}/restore`),
 };
 
 // 우편 API
@@ -86,8 +95,8 @@ export const guildApi = {
 
 // 통계 API
 export const statsApi = {
-  getDailyFocusDistribution: () =>
-    api.get(`/api/v1/admin/stats/focus-time/daily`),
+  getDailyFocusDistribution: (date: string) =>
+    api.get(`/api/v1/admin/stats/focus-time/daily`, { params: { date } }),
 
   getWeeklyFocusDistribution: (date: string) =>
     api.get(`/api/v1/admin/stats/focus-time/weekly`, { params: { date } }),

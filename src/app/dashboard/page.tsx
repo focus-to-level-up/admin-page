@@ -21,7 +21,7 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'
 
 interface CategoryItem {
   categoryName: string;
-  count: number;
+  userCount: number; 
   percentage: number;
 }
 
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const { data: dailyData, isLoading: dailyLoading } = useQuery({
     queryKey: ['dailyFocusDistribution', today],
     queryFn: async () => {
-      const res = await statsApi.getDailyFocusDistribution();
+      const res = await statsApi.getDailyFocusDistribution(today);
       return res.data.data;
     },
   });
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                     label={renderCustomLabel}
                     outerRadius={100}
                     fill="#8884d8"
-                    dataKey="count"
+                    dataKey="userCount"
                     nameKey="categoryName"
                   >
                     {categoryData?.distribution?.map((_: unknown, index: number) => (

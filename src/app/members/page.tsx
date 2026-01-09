@@ -7,7 +7,10 @@ import { format, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale'; 
 import { 
   Search, User, ChevronDown, ChevronLeft, ChevronRight, // 아이콘 추가
-  ShieldAlert, ShieldCheck, BarChart2, Ban
+  ShieldAlert, ShieldCheck, BarChart2, Ban,
+  Edit2,
+  Check,
+  X
 } from 'lucide-react';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, 
@@ -83,10 +86,14 @@ export default function MembersPage() {
     mutationFn: ({ memberId, nickname }: { memberId: number; nickname: string }) =>
       memberApi.updateNickname(memberId, nickname),
     onSuccess: () => {
+      alert('닉네임이 성공적으로 변경되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['memberDetail'] });
       queryClient.invalidateQueries({ queryKey: ['memberSearch'] });
       setEditingField(null);
     },
+    onError: (error: any) => {
+        alert(`변경 실패: ${error.response?.data?.message || '알 수 없는 오류'}`);
+    }
   });
 
   const updateProfileMessageMutation = useMutation({
@@ -318,13 +325,164 @@ export default function MembersPage() {
                 <div className="p-8 text-center text-gray-400">왼쪽에서 회원을 선택해주세요.</div>
               ) : (
                 <div className="p-4 space-y-4">
-                  {/* ... (기존 정보들) ... */}
                   {/* 회원 ID (RevenueCat용) */}
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <p className="text-sm text-blue-600 font-medium">RevenueCat 회원 ID</p>
                     <p className="text-lg font-mono mt-1">{memberDetail.memberId}</p>
                   </div>
-                  {/* ... (닉네임, 상태메시지, 학교 등 기존 필드들) ... */}
+                  {/* 1. 닉네임 수정 영역 */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 mb-1">닉네임</p>
+                      {editingField === 'nickname' ? (
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-gray-900"
+                          autoFocus
+                        />
+                      ) : (
+                        <p className="font-medium text-gray-900">{memberDetail.nickname}</p>
+                      )}
+                    </div>
+                    <div className="ml-3">
+                      {editingField === 'nickname' ? (
+                        <div className="flex gap-2">
+                          <button onClick={handleSave} className="p-1.5 text-green-600 hover:bg-green-100 rounded">
+                            <Check size={18} />
+                          </button>
+                          <button onClick={() => setEditingField(null)} className="p-1.5 text-red-600 hover:bg-red-100 rounded">
+                            <X size={18} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleEdit('nickname', memberDetail.nickname)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 2. 상태메시지 수정 영역 */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 mb-1">상태메시지</p>
+                      {editingField === 'profileMessage' ? (
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-gray-900"
+                          autoFocus
+                        />
+                      ) : (
+                        <p className="font-medium text-gray-900">{memberDetail.profileMessage || '-'}</p>
+                      )}
+                    </div>
+                    <div className="ml-3">
+                      {editingField === 'profileMessage' ? (
+                        <div className="flex gap-2">
+                          <button onClick={handleSave} className="p-1.5 text-green-600 hover:bg-green-100 rounded">
+                            <Check size={18} />
+                          </button>
+                          <button onClick={() => setEditingField(null)} className="p-1.5 text-red-600 hover:bg-red-100 rounded">
+                            <X size={18} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleEdit('profileMessage', memberDetail.profileMessage || '')}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. 학교 정보 수정 영역 (입력창 2개) */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 mb-1">학교</p>
+                      {editingField === 'school' ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            placeholder="학교명"
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-gray-900"
+                            autoFocus
+                          />
+                          <input
+                            type="text"
+                            value={editSchoolAddress}
+                            onChange={(e) => setEditSchoolAddress(e.target.value)}
+                            placeholder="학교 주소"
+                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-gray-900 text-sm"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-medium text-gray-900">{memberDetail.school || '-'}</p>
+                          {memberDetail.schoolAddress && (
+                            <p className="text-xs text-gray-500 mt-0.5">{memberDetail.schoolAddress}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-3 self-start">
+                      {editingField === 'school' ? (
+                        <div className="flex gap-2">
+                          <button onClick={handleSave} className="p-1.5 text-green-600 hover:bg-green-100 rounded">
+                            <Check size={18} />
+                          </button>
+                          <button onClick={() => setEditingField(null)} className="p-1.5 text-red-600 hover:bg-red-100 rounded">
+                            <X size={18} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleEdit('school', memberDetail.school || '', memberDetail.schoolAddress || '')}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-500">골드</p>
+                      <p className="font-medium text-gray-900">{memberDetail.gold?.toLocaleString() ?? 0}</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-500">다이아</p>
+                      <p className="font-medium text-gray-900">{memberDetail.diamond?.toLocaleString() ?? 0}</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-500">레벨</p>
+                      <p className="font-medium text-gray-900">{memberDetail.currentLevel ?? 0}</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-500">카테고리</p>
+                      <p className="font-medium text-gray-900">
+                        {memberDetail.categoryMain ?? '-'} / {memberDetail.categorySub ?? '-'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 소셜 로그인 정보 */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500">소셜 로그인</p>
+                    <p className="font-medium text-gray-900">{memberDetail.socialType}</p>
+                  </div>
+
+                  {/* 가입일 및 상태 */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-500">가입일</p>

@@ -165,7 +165,7 @@ export default function StatsPage() {
                 <div className="mt-6 overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-200"> {/* 테두리도 너무 연하면 border-gray-300으로 변경 */}
+                      <tr className="border-b border-gray-400"> {/* 테두리도 너무 연하면 border-gray-300으로 변경 */}
                         {/* [수정] text-gray-500 -> text-gray-900 (거의 검정) */}
                         <th className="text-left py-2 px-3 font-bold text-gray-900">시간대</th>
                         <th className="text-right py-2 px-3 font-bold text-gray-900">유저 수</th>
@@ -206,26 +206,33 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={focusData?.distribution || []} margin={{ bottom: 60 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="label"
-                          fontSize={12}
-                          angle={-45}
-                          textAnchor="end"
-                          height={80}
-                          tick={{ fill: '#374151' }} // [수정] X축 글자색 진하게
-                        />
-                        <YAxis 
-                          tick={{ fill: '#374151' }} // [수정] Y축 글자색 진하게
-                        />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', color: '#111827' }} // 툴팁 스타일도 명확하게
-                          itemStyle={{ color: '#374151' }}
-                        />
-                        <Bar dataKey="userCount" fill="#3B82F6" name="유저 수" />
-                    </BarChart>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData?.distribution || []}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="userCount"
+                        nameKey="categoryName"
+                        label={renderCategoryLabel} // 상단에 정의된 라벨 함수 사용
+                      >
+                        {categoryData?.distribution?.map((_: unknown, index: number) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#fff', borderColor: '#e5e7eb', color: '#111827' }}
+                      />
+                      <Legend 
+                        wrapperStyle={{ paddingTop: '20px' }}
+                        formatter={(value) => <span className="text-gray-700 font-medium">{value}</span>}
+                      />
+                    </PieChart>
                   </ResponsiveContainer>
 
                   {/* 카테고리 테이블 */}
